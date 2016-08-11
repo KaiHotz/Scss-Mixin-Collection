@@ -1,0 +1,155 @@
+// =============================================================================
+// Functions
+// =============================================================================
+
+// String Replace
+@function str-replace($string, $search, $replace: "") {
+	$index: str-index($string, $search);
+
+	@if $index {
+		@return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
+	}
+
+	@return $string;
+}
+
+// String Calculate REM
+@function calculateRem($size) {
+  $remSize: $size / 16px;
+  @return $remSize * 1rem;
+}
+
+// =============================================================================
+// Mixins
+// =============================================================================
+
+@mixin font-size($size) {
+  font-size: $size !important;
+  font-size: calculateRem($size) !important;
+}
+
+// Opacity
+@mixin opacity($opacity) {
+  opacity: $opacity;
+  $opacity-ie: $opacity * 100;
+  filter: alpha(opacity=$opacity-ie); //IE8
+}
+
+// Text Rendering
+@mixin improve-text-rendering {
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+}
+
+// Font Face (*requiers Fuction String Replace*)
+@mixin font-face($name, $path, $weight: null, $style: null, $exts: eot woff2 woff ttf svg) {
+	$src: null;
+
+	$extmods: (
+		eot: "?",
+		svg: "#" + str-replace($name, " ", "_")
+	);
+
+	$formats: (
+		otf: "opentype",
+		ttf: "truetype"
+	);
+
+	@each $ext in $exts {
+		$extmod: if(map-has-key($extmods, $ext), $ext + map-get($extmods, $ext), $ext);
+		$format: if(map-has-key($formats, $ext), map-get($formats, $ext), $ext);
+		$src: append($src, url(quote($path + "." + $extmod)) format(quote($format)), comma);
+	}
+
+	@font-face {
+		font-family: quote($name);
+		font-style: $style;
+		font-weight: $weight;
+		src: $src;
+	}
+}
+
+// Media Query
+@mixin media-max($width){
+  @media only screen and (max-width: $width - 1) { @content; }
+}
+@mixin media-min($width){
+  @media only screen and (min-width: $width) { @content; }
+}
+@mixin media-btn($width-min, $width-max){
+  @media only screen and (min-width: $width-min) and (max-width: $width-max - 1) { @content; }
+}
+
+// Clearfix
+@mixin clearfix() {
+  &:before,
+  &:after {
+    content: " "; // 1
+    display: table; // 2
+  }
+  &:after {
+    clear: both;
+  }
+}
+
+//Transitions
+@mixin transition($args...) {
+    -webkit-transition: $args;
+    -moz-transition: $args;
+    -ms-transition: $args;
+    -o-transition: $args;
+    transition: $args;
+}
+
+//Box Shadows
+@mixin box-shadow($top, $left, $blur, $color, $inset:"") {
+
+    -webkit-box-shadow:$top $left $blur $color #{$inset};
+    -moz-box-shadow:$top $left $blur $color #{$inset};
+    box-shadow:$top $left $blur $color #{$inset};
+
+}
+//Transform
+@mixin transform($transforms) {
+       -moz-transform: $transforms;
+         -o-transform: $transforms;
+        -ms-transform: $transforms;
+    -webkit-transform: $transforms;
+          transform: $transforms;
+}
+
+//Vertical align (*needs Transform mixin*)
+@mixin verticalcenter(){
+    position: absolute;
+    top: 50%;
+    @include transform(translateY(-50%));
+
+}
+
+// =============================================================================
+// Este mixin crea Wrappers (envolturas) con ancho maximo, en espacios
+// menores el bloque se adapta al 100% dejando un margen equivalente a $border-distance.
+// El wrapper sirve para contener otros bloques.
+// =============================================================================
+
+@mixin lib_wrapper_mixin($block-width, $border-distance){
+  width: auto;
+  max-width: $block-width;
+  padding-left: $border-distance;
+  padding-right: $border-distance;
+  margin-left: auto;
+  margin-right: auto;
+  @media (min-width: $block-width + $border-distance * 2) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+//Placeholders
+@mixin placeholder {
+  ::-webkit-input-placeholder {@content}
+  :-moz-placeholder           {@content}
+  ::-moz-placeholder          {@content}
+  :-ms-input-placeholder      {@content}  
+}
+
