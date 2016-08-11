@@ -23,6 +23,7 @@
 // Mixins
 // =============================================================================
 
+//Calculate REM (*requiers Fuction calculateRem*)
 @mixin font-size($size) {
   font-size: $size !important;
   font-size: calculateRem($size) !important;
